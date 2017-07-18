@@ -1,0 +1,32 @@
+#! /usr/bin/env node
+//# -*- mode: javascript -*-
+//# vi: set ft=javascript :
+'use strict';
+
+const Riker = require('riker');
+const path = require('path');
+
+const builderCliCommands = require('../cli');
+
+const riker = new Riker();
+
+for (let commandName in builderCliCommands) {
+  let humanName = commandName
+    .split(/([A-Z][a-z]+)|_|-/g)
+    .filter(function(element) {
+      return element;
+    })
+    .map(function(item) {
+      return item.toLowerCase();
+    })
+    .join('-');
+  riker.addSubCommand(humanName, builderCliCommands[commandName]);
+}
+
+riker.registerConfigFile(path.resolve(path.join('__dirname', '..', 'default.yml')));
+const homeDir = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
+riker.registerConfigFile(path.resolve(path.join(homeDir, '.acquia-multisite-orchestrator.yml')));
+
+riker.run();
+
+module.exports = riker;
